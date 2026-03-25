@@ -111,6 +111,9 @@ def test_submit_past_due_returns_409(student_client, past_due_assignment):
         format="json",
     )
     assert resp.status_code == 409
+    data = resp.json()
+    assert data.get("code") == "DUE_DATE_PASSED"
+    assert "due date" in data.get("detail", "").lower()
 
 
 @pytest.mark.django_db

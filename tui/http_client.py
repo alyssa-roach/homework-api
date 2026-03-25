@@ -30,6 +30,37 @@ def _safe_json(data: Any) -> str:
         return str(data)
 
 
+def _is_sensitive_response_key(key: str) -> bool:
+    lk = key.lower()
+    return lk in ("token", "access_token", "refresh_token") or lk.endswith("_token")
+
+
+def _redact_sensitive_response_json(data: Any) -> Any:
+    if isinstance(data, dict):
+        return {
+            k: ("***" if _is_sensitive_response_key(k) else _redact_sensitive_response_json(v))
+            for k, v in data.items()
+        }
+    if isinstance(data, list):
+        return [_redact_sensitive_response_json(x) for x in data]
+    return data
+
+
+def _mask_response_for_log(path: str, resp_text: str) -> str:
+    raw = resp_text if resp_text is not None else ""
+    if not raw.strip():
+        return "—"
+    is_token_path = "/api/auth/token/" in path
+    try:
+        parsed = json.loads(raw)
+    except (json.JSONDecodeError, TypeError, ValueError):
+        if is_token_path:
+            return "[Redacted: non-JSON response on token endpoint]"
+        return raw
+    redacted = _redact_sensitive_response_json(parsed)
+    return _safe_json(redacted)
+
+
 class LoggedAPIClient:
     """
     Thin wrapper around requests with structured logging for demos.
@@ -74,11 +105,12 @@ class LoggedAPIClient:
         query_params: Optional[Dict[str, str]] = None,
     ) -> None:
         req_display = self._mask_request_for_log(req_body)
-        req_json = _truncate(_safe_json(req_body) if req_body is not None else "—")
+        req_json = _truncate(_safe_json(req_display) if req_display is not None else "—")
         qp_line = ""
         if query_params:
             qp_line = f"Query params:\n{_truncate(_safe_json(query_params))}\n\n"
-        resp_trunc = _truncate(resp_text or "—")
+        resp_masked = _mask_response_for_log(path, resp_text)
+        resp_trunc = _truncate(resp_masked)
         body = (
             f"{method} {path}\n\n"
             f"{qp_line}"
@@ -105,7 +137,7 @@ class LoggedAPIClient:
             plain = (
                 f"{method} {path}\n{qp_plain}"
                 f"REQUEST: {_safe_json(req_display)}\n"
-                f"STATUS: {status}\nRESPONSE: {_truncate(resp_text)}\n\n"
+                f"STATUS: {status}\nRESPONSE: {resp_trunc}\n\n"
             )
             Path(self.log_to_file).parent.mkdir(parents=True, exist_ok=True)
             with open(self.log_to_file, "a", encoding="utf-8") as fh:

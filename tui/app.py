@@ -42,6 +42,7 @@ def login_flow(client: LoggedAPIClient, console: Console) -> Optional[Dict[str, 
     r2 = client.get("/api/me/")
     if r2.status_code != 200:
         console.print("[red]Could not load /api/me/[/]")
+        client.set_token(None)
         return None
     me = r2.json()
     console.print(f"[green]Logged in as[/] [bold]{me.get('username')}[/] ([cyan]{me.get('role')}[/])")
@@ -82,11 +83,18 @@ def menu_student(client: LoggedAPIClient, console: Console) -> None:
         else:
             console.print(f"[red]Error {r.status_code}[/]")
     elif choice == "3":
-        aid = Prompt.ask("Assignment ID", default="1")
+        while True:
+            aid = Prompt.ask("Assignment ID", default="1")
+            try:
+                assignment_id = int(aid.strip())
+            except ValueError:
+                console.print("[red]Assignment ID must be a whole number.[/]")
+                continue
+            break
         content = Prompt.ask("Submission content (single line for demo; use \\n in text if needed)")
         r = client.post(
             "/api/submissions/",
-            json_body={"assignment_id": int(aid), "content": content.replace("\\n", "\n")},
+            json_body={"assignment_id": assignment_id, "content": content.replace("\\n", "\n")},
         )
         if r.status_code in (200, 201):
             console.print("[green]Submission saved.[/]")
@@ -134,11 +142,18 @@ def menu_teacher(client: LoggedAPIClient, console: Console) -> None:
         else:
             console.print(f"[red]Error {r.status_code}[/]")
     elif choice == "2":
-        sid = Prompt.ask("Submission ID to grade")
+        while True:
+            sid = Prompt.ask("Submission ID to grade")
+            try:
+                submission_id = int(sid.strip())
+            except ValueError:
+                console.print("[red]Submission ID must be a whole number.[/]")
+                continue
+            break
         grade = Prompt.ask("Final grade (A-F)", default="A")
         notes = Prompt.ask("Teacher notes", default="")
         r = client.patch(
-            f"/api/submissions/{sid}/",
+            f"/api/submissions/{submission_id}/",
             json_body={"final_grade": grade, "teachers_notes": notes},
         )
         if r.status_code == 200:

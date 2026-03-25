@@ -18,7 +18,7 @@ from homework_api.serializers import (
     HomeworkSubmissionGradeSerializer,
     HomeworkSubmissionSerializer,
 )
-from homework_api.services import grade_submission, submit_homework
+from homework_api.services import DueDatePassedError, grade_submission, submit_homework
 
 
 @api_view(["GET"])
@@ -101,14 +101,18 @@ class HomeworkSubmissionViewSet(
                 {"detail": "User is not a student."},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        submission, error = submit_homework(
-            student=student,
-            assignment_id=serializer.validated_data["assignment_id"],
-            content=serializer.validated_data["content"],
-        )
+        try:
+            submission, error = submit_homework(
+                student=student,
+                assignment_id=serializer.validated_data["assignment_id"],
+                content=serializer.validated_data["content"],
+            )
+        except DueDatePassedError as exc:
+            return Response(
+                {"detail": str(exc), "code": exc.code},
+                status=status.HTTP_409_CONFLICT,
+            )
         if error:
-            if "due date has passed" in error:
-                return Response({"detail": error}, status=status.HTTP_409_CONFLICT)
             return Response({"detail": error}, status=status.HTTP_400_BAD_REQUEST)
         out_serializer = HomeworkSubmissionSerializer(submission)
         return Response(out_serializer.data, status=status.HTTP_201_CREATED)

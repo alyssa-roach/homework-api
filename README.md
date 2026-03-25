@@ -7,8 +7,8 @@
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
-# Install dependencies
-pip install -r requirements.txt
+# Install dependencies (use requirements-dev.txt to include pytest)
+pip install -r requirements-dev.txt
 
 # Configure environment (copy and edit)
 cp .env.example .env
@@ -77,6 +77,7 @@ curl -X PATCH http://127.0.0.1:8000/api/submissions/1/ \
 ### Run tests
 
 ```bash
+# Install dev dependencies first if needed (see Project Setup)
 pytest tests/ -v
 ```
 
@@ -91,7 +92,7 @@ python manage.py runserver
 
 # Terminal 2: TUI
 source .venv/bin/activate
-pip install -r requirements.txt   # if needed: requests, rich
+pip install -r requirements-dev.txt
 python -m tui
 ```
 

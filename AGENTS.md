@@ -30,6 +30,7 @@ REST API for a school homework submission platform. Students submit homework; te
 
 ```bash
 source .venv/bin/activate
+pip install -r requirements-dev.txt
 python manage.py migrate
 python manage.py seed_users
 python manage.py runserver

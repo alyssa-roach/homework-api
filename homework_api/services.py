@@ -8,9 +8,16 @@ from django.utils import timezone
 from homework_api.models import Assignment, HomeworkSubmission, Student
 
 
+class DueDatePassedError(Exception):
+    """Raised when a student submits or resubmits after the assignment due date."""
+
+    code = "DUE_DATE_PASSED"
+
+
 def submit_homework(student: Student, assignment_id: int, content: str) -> Tuple[Optional[HomeworkSubmission], Optional[str]]:
     """
     Create or overwrite a homework submission.
+    Raises DueDatePassedError if the assignment is past due.
     Returns (submission, error_message). If error_message is set, submission is None.
     """
     try:
@@ -20,30 +27,19 @@ def submit_homework(student: Student, assignment_id: int, content: str) -> Tuple
 
     now = timezone.now()
     if assignment.due_date < now:
-        return None, "Assignment due date has passed"
+        raise DueDatePassedError("Assignment due date has passed")
 
-    existing = HomeworkSubmission.objects.filter(
+    submission, _created = HomeworkSubmission.objects.update_or_create(
         student=student,
         assignment=assignment,
-    ).first()
-
-    if existing:
-        # Resubmission: overwrite and clear grade for regrading
-        existing.content = content
-        existing.submission_date = now
-        existing.final_grade = None
-        existing.teachers_notes = ""
-        existing.grading_date = None
-        existing.graded_by = None
-        existing.save()
-        return existing, None
-
-    # Concurrent first submits for the same (student, assignment) can race and raise IntegrityError.
-    submission = HomeworkSubmission.objects.create(
-        assignment=assignment,
-        student=student,
-        content=content,
-        submission_date=now,
+        defaults={
+            "content": content,
+            "submission_date": now,
+            "final_grade": None,
+            "teachers_notes": "",
+            "grading_date": None,
+            "graded_by": None,
+        },
     )
     return submission, None
 

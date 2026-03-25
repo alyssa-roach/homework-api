@@ -41,12 +41,12 @@ Assignment (name, due_date)
 
 ## Submission Flow
 
-1. **Create:** POST with `assignment_id`, `content`; unknown assignment → **400**; past due → **409**; first submit or resubmit before due → **201**
+1. **Create:** POST with `assignment_id`, `content`; unknown assignment → **400**; past due → **409** with JSON `detail` plus `code: "DUE_DATE_PASSED"`; first submit or resubmit before due → **201**
 2. **Resubmit (before due):** Overwrite existing row; clear grade and grading metadata for regrading
 3. **Grade:** Teacher PATCH with `final_grade` (A–F), `teachers_notes`; set `grading_date`, `graded_by`
 
 ## Testing
 
-- `pytest tests/ -v`
+- Install dev deps: `pip install -r requirements-dev.txt`, then `pytest tests/ -v`
 - Fixtures: `student_client`, `teacher_client`, `assignment`, `past_due_assignment`
 - Use `@pytest.mark.django_db` for DB tests

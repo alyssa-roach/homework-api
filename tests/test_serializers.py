@@ -30,9 +30,10 @@ def test_submission_create_serializer_valid():
     """HomeworkSubmissionCreateSerializer accepts valid data."""
     data = {"assignment_id": 1, "content": "My homework content"}
     serializer = HomeworkSubmissionCreateSerializer(data=data)
-    # assignment_id 1 may not exist; we're testing structure
-    assert "assignment_id" in serializer.fields
-    assert "content" in serializer.fields
+    assert serializer.is_valid(), serializer.errors
+    assert not serializer.errors
+    assert serializer.validated_data["assignment_id"] == 1
+    assert serializer.validated_data["content"] == "My homework content"
 
 
 def test_submission_create_serializer_empty_content_rejected():

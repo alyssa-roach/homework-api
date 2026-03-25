@@ -7,7 +7,7 @@ from homework_api.models import HomeworkSubmission, Student
 
 
 class IsStudent(permissions.BasePermission):
-    """Only users with a Student profile may access."""
+    """Only users with role='student' may access."""
 
     def has_permission(self, request, view):
         if not request.user or not request.user.is_authenticated:
@@ -16,7 +16,7 @@ class IsStudent(permissions.BasePermission):
 
 
 class IsTeacher(permissions.BasePermission):
-    """Only users with a Teacher profile may access."""
+    """Only users with role='teacher' may access."""
 
     def has_permission(self, request, view):
         if not request.user or not request.user.is_authenticated:

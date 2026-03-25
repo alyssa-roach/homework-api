@@ -5,7 +5,7 @@ import pytest
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 
-from homework_api.models import Assignment, HomeworkSubmission, Student, Teacher, User
+from homework_api.models import Assignment, Student, Teacher, User
 
 
 @pytest.fixture
