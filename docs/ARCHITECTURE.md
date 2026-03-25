@@ -2,7 +2,7 @@
 
 ## Data Model
 
-```
+```text
 User (custom, role: student|teacher)
   ├── Student (OneToOne)
   └── Teacher (OneToOne)

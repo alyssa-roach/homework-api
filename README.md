@@ -49,7 +49,7 @@ curl -H "Authorization: Token <token>" http://127.0.0.1:8000/api/assignments/
 curl -X POST http://127.0.0.1:8000/api/assignments/ \
   -H "Authorization: Token <teacher_token>" \
   -H "Content-Type: application/json" \
-  -d '{"name":"Math HW 2","due_date":"2025-04-15T23:59:59Z"}'
+  -d '{"name":"Math HW 2","due_date":"2027-04-15T23:59:59Z"}'
 ```
 
 ### Submissions
