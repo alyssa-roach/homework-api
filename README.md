@@ -1,4 +1,4 @@
-# Backend Take Home Assignment
+# Backend Take-Home Assignment
 
 ## Project Setup
 
@@ -64,8 +64,8 @@ curl -X POST http://127.0.0.1:8000/api/submissions/ \
 # List submissions (student: own only; teacher: all)
 curl -H "Authorization: Token <token>" "http://127.0.0.1:8000/api/submissions/?grade=ungraded&assignment_name=Math"
 
-# Teacher filters: assignment_name, date_from, date_to, student_name
-curl -H "Authorization: Token <teacher_token>" "http://127.0.0.1:8000/api/submissions/?date_from=2025-03-01&date_to=2025-03-31"
+# Teacher filters: assignment_name, date_from, date_to, student_name (replace placeholders with ISO 8601 datetimes)
+curl -H "Authorization: Token <teacher_token>" "http://127.0.0.1:8000/api/submissions/?date_from=<ISO8601-from>&date_to=<ISO8601-to>"
 
 # Grade submission (teacher)
 curl -X PATCH http://127.0.0.1:8000/api/submissions/1/ \
